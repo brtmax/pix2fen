@@ -3,13 +3,16 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 train_dir = "dataset/full/train"
 val_dir   = "dataset/full/val"
 img_size  = (69, 69)
 batch_size = 32
 num_classes = 13
-epochs = 25
+epochs = 9
 model_path = "square_classifier.h5"
 
 train_datagen = ImageDataGenerator(
