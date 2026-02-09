@@ -4,9 +4,14 @@ from PIL import Image, ImageEnhance
 from pathlib import Path
 
 
+// synthetic (=from lichess)
 pieces_folder = "pieces"
 squares_folder = "squares"
 output_folder = "dataset/full"
+
+// screenshots I took myself
+real_cells_folder = "real_cells"
+real_weight = 0.5
 
 square_size = 69
 train_ratio = 0.8
@@ -17,6 +22,48 @@ classes = [
     "empty","wP","wN","wB","wR","wQ","wK",
     "bP","bN","bB","bR","bQ","bK"
 ]
+
+def add_ui_noise(img):
+    if random.random() < 0.3:
+        px = img.load()
+        w, h = img.size
+        for i in range(w):
+            px[i, 0] = (0,0,0,255)
+            px[i, h-1] = (0,0,0,255)
+        for j in range(h):
+            px[0, j] = (0,0,0,255)
+            px[w-1, j] = (0,0,0,255)
+    return img
+
+def maybe_replace_with_real(cls):
+    cls_folder = os.path.join(real_cells_folder, cls)
+    if not os.path.isdir(cls_folder):
+        return None
+    files = os.listdir(cls_folder)
+    if not files:
+        return None
+    if random.random() < real_weight:
+        return Image.open(os.path.join(cls_folder, random.choice(files))).convert("RGBA")
+    return None
+
+// We differentiate between empty square augmentation and full square augmentation
+// This is required since board texture is much more noticable on empty square
+def augment_empty(img):
+    img = augment_image(img)
+    if random.random() < 0.5:
+        img = ImageEnhance.Color(img).enhance(random.uniform(0.5, 1.5))
+    return img
+
+def paste_with_jitter(base, piece):
+    bx, by = base.size
+    px, py = piece.size
+    max_dx = int(0.1 * bx)
+    max_dy = int(0.1 * by)
+    dx = random.randint(-max_dx, max_dx)
+    dy = random.randint(-max_dy, max_dy)
+    x = (bx - px)//2 + dx
+    y = (by - py)//2 + dy
+    base.alpha_composite(piece, (x, y))
 
 def augment_image(img):
     # Random brightness
@@ -69,11 +116,20 @@ for board_name in os.listdir(squares_folder):
                         abs_path = os.path.abspath(piece_path)
                         print("Trying to open piece:", abs_path)
                         piece = Image.open(piece_path).convert("RGBA")
-                        img.alpha_composite(piece)
+                        paste_with_hitter(img, piece)
 
+                    real_img = maybe_replace_with_real(cls)
+                    if real_img is not None:
+                        img = real_img.resize((square_size, square_size))
                     # Generate augmentations
-                    for i in range(augmentations_per_square):
+                    repeat = augmentations_per_square * (3 if cls == "empty" else 1)
+                    for i in range(repeat):
                         aug_img = augment_image(img)
+                        if cls == "empty":
+                            aug_img = augment_empty(img)
+                        else: 
+                            aug_img = augment_image(img)
+                        aug_img = add_ui_noise(aug_img)
                         # Random train/val split
                         split_folder = "train" if random.random() < train_ratio else "val"
                         # Save image
