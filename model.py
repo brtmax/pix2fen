@@ -10,7 +10,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 train_dir = "dataset/full/train"
 val_dir   = "dataset/full/val"
 img_size  = (69, 69)
-batch_size = 32
+batch_size = 64
 num_classes = 13
 epochs = 9
 model_path = "square_classifier.h5"
@@ -58,8 +58,8 @@ model = Sequential([
     MaxPooling2D(2,2),
 
     Flatten(),
-    Dense(128, activation='relu'),
-    Dropout(0.3),
+    Dense(64, activation='relu'),
+    Dropout(0.4),
     Dense(num_classes, activation='softmax')
 ])
 
