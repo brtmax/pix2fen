@@ -6,13 +6,16 @@ description = "Chessboard screenshot to FEN"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "tensorflow>=2.14",
     "opencv-python",
     "numpy"
 ]
 
 [project.scripts]
 pix2fen = "pix2fen.cli:main"
+
+[tool.setuptools]
+packages = ["pix2fen"]
+package-dir = {"" = "src"}
 
 [build-system]
 requires = ["setuptools>=61.0"]
