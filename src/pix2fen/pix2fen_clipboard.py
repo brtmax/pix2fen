@@ -11,9 +11,10 @@ import subprocess
 from pix2fen.fen import pieces_to_fen
 from pix2fen.crop import crop_chessboard
 from pix2fen.inference import predict_cells
+from pix2fen.inference import predict_cells_tflite
+from pix2fen.inference import predict_cells_tflite_batch
 
 def copy_to_clipboard(text):
-    """Copy text to clipboard using wl-copy (Wayland)."""
     if shutil.which("wl-copy") is None:
         print("[WARNING] wl-copy not found, skipping clipboard copy.", file=sys.stderr)
         return
@@ -79,7 +80,8 @@ def main():
     ]
 
     try:
-        pieces = predict_cells(cells)
+        # pieces = predict_cells(cells)
+        pieces = predict_cells_tflite(cells)
     except Exception as e:
         print(f"[ERROR] Model inference failed: {e}", file=sys.stderr)
         sys.exit(1)
