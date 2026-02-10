@@ -12,6 +12,17 @@ from pix2fen.fen import pieces_to_fen
 from pix2fen.crop import crop_chessboard
 from pix2fen.inference import predict_cells
 
+def copy_to_clipboard(text):
+    """Copy text to clipboard using wl-copy (Wayland)."""
+    if shutil.which("wl-copy") is None:
+        print("[WARNING] wl-copy not found, skipping clipboard copy.", file=sys.stderr)
+        return
+    try:
+        subprocess.run(["wl-copy"], input=text, text=True, check=True)
+        print("[DEBUG] FEN copied to clipboard.")
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Failed to copy to clipboard: {e}", file=sys.stderr)
+
 def get_selection_geometry():
     try:
         result = subprocess.run(["slurp"], check=True, capture_output=True, text=True, env=os.environ)
@@ -75,6 +86,7 @@ def main():
 
     fen = pieces_to_fen(pieces)
     print(fen)
+    copy_to_clipboard(fen)
 
 if __name__ == "__main__":
     main()
