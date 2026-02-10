@@ -3,6 +3,7 @@
 import cv2
 import shutil
 import os
+import sys
 import tempfile
 import pyperclip
 import subprocess
@@ -11,20 +12,37 @@ from pix2fen.fen import pieces_to_fen
 from pix2fen.crop import crop_chessboard
 from pix2fen.inference import predict_cells
 
+def get_selection_geometry():
+    try:
+        result = subprocess.run(["slurp"], check=True, capture_output=True, text=True, env=os.environ)
+        geom = result.stdout.strip()
+        print(f"[DEBUG] Geometry: '{geom}'")
+        return geom
+    except subprocess.CalledProcessError:
+        raise RuntimeError("Slurp selection failed or was cancelled.")
+
 def screenshot_to_image():
-    # Check if maim is available
-    if shutil.which("maim") is None:
-        raise RuntimeError("maim is required for screenshot functionality on Linux.")
+    if shutil.which("grim") is None or shutil.which("slurp") is None:
+        raise RuntimeError("grim + slurp are required for interactive screenshot on Wayland.")
 
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
         tmp_path = tmp.name
 
     try:
-        subprocess.run(["maim", "-s", tmp_path], check=True)
+        # Get selection from slurp
+
+        print("[DEBUG] Launching slurp...")
+        geom = get_selection_geometry()
+        print(f"[DEBUG] Geometry returned: {geom}")
+        if not geom:
+            raise RuntimeError("No selection made.")
+
+        subprocess.run(["grim", "-g", geom, tmp_path], check=True)
 
         img = cv2.imread(tmp_path)
         if img is None:
             raise RuntimeError("Screenshot failed or file unreadable")
+
     finally:
         if os.path.exists(tmp_path):
             os.unlink(tmp_path)
@@ -52,15 +70,11 @@ def main():
     try:
         pieces = predict_cells(cells)
     except Exception as e:
-            print(f"[ERROR] Model inference failed: {e}", file=sys.stderr)
-            sys.exit(1)
+        print(f"[ERROR] Model inference failed: {e}", file=sys.stderr)
+        sys.exit(1)
 
     fen = pieces_to_fen(pieces)
-
-    # Copy FEN to clipboard via glurp
-    pyperclip.copy(fen)
-    print("[INFO] FEN copied to clipboard")
+    print(fen)
 
 if __name__ == "__main__":
     main()
-

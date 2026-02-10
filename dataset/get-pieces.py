@@ -1,11 +1,13 @@
 import os
 import requests
+import cairosvg
 from PIL import Image
 from io import BytesIO
 
+# disguised is disguised
 themes = [
     "alpha","anarcandy","caliente","california","cardinal","cburnett","celtic",
-    "chess7","chessnut","companion","cooke","disguised","dubrovny","fantasy",
+    "chess7","chessnut","companion","cooke","dubrovny","fantasy",
     "firi","fresca","gioco","governor","horsey","icpieces","kiwen-suwi","kosal",
     "leipzig","letter","maestro","merida","monarchy","mono","mpchess","pirouetti",
     "pixel","reillycraig","rhosgfx","riohacha","shahi-ivory-brown","shapes",
@@ -31,18 +33,25 @@ def download_and_convert(url, save_path):
         r = requests.get(url)
         r.raise_for_status()
         ext = os.path.splitext(url)[1].lower()
+
         if ext == ".svg":
-            # Save SVG as-is
+            # convert svg to png
+            png_bytes = cairosvg.svg2png(bytestring=r.content, output_width=target_size, output_height=target_size)
             with open(save_path, "wb") as f:
-                f.write(r.content)
+                f.write(png_bytes)
         else:
             img = Image.open(BytesIO(r.content)).convert("RGBA")
             img = img.resize((target_size, target_size), Image.Resampling.LANCZOS)
             img.save(save_path)
+
         print(f"Downloaded {save_path}")
         return True
+
     except requests.HTTPError as e:
         print(f"Failed to download {url}: {e}")
+        return False
+    except Exception as e:
+        print(f"Error converting {url}: {e}")
         return False
 
 for theme in themes:

@@ -3,19 +3,18 @@ import random
 from PIL import Image, ImageEnhance
 from pathlib import Path
 
-
-// synthetic (=from lichess)
+# synthetic (=from lichess)
 pieces_folder = "pieces"
 squares_folder = "squares"
 output_folder = "dataset/full"
 
-// screenshots I took myself
+# screenshots I took myself
 real_cells_folder = "real_cells"
 real_weight = 0.5
 
 square_size = 69
 train_ratio = 0.8
-augmentations_per_square = 5
+augmentations_per_square = 10
 
 # 13 classes
 classes = [
@@ -46,8 +45,8 @@ def maybe_replace_with_real(cls):
         return Image.open(os.path.join(cls_folder, random.choice(files))).convert("RGBA")
     return None
 
-// We differentiate between empty square augmentation and full square augmentation
-// This is required since board texture is much more noticable on empty square
+# We differentiate between empty square augmentation and full square augmentation
+# This is required since board texture is much more noticable on empty square
 def augment_empty(img):
     img = augment_image(img)
     if random.random() < 0.5:
@@ -116,15 +115,15 @@ for board_name in os.listdir(squares_folder):
                         abs_path = os.path.abspath(piece_path)
                         print("Trying to open piece:", abs_path)
                         piece = Image.open(piece_path).convert("RGBA")
-                        paste_with_hitter(img, piece)
+                        paste_with_jitter(img, piece)
 
                     real_img = maybe_replace_with_real(cls)
                     if real_img is not None:
                         img = real_img.resize((square_size, square_size))
+
                     # Generate augmentations
                     repeat = augmentations_per_square * (3 if cls == "empty" else 1)
                     for i in range(repeat):
-                        aug_img = augment_image(img)
                         if cls == "empty":
                             aug_img = augment_empty(img)
                         else: 
