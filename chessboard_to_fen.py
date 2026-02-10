@@ -1,4 +1,5 @@
 import cv2
+import json
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -8,10 +9,17 @@ import os
 MODEL_PATH = "pix2fen.h5"
 IMG_SIZE = (69, 69)
 
-IDX_TO_PIECE = {
-    0: "",
-    1: "P", 2: "N", 3: "B", 4: "R", 5: "Q", 6: "K",
-    7: "p", 8: "n", 9: "b", 10: "r", 11: "q", 12: "k"
+with open("class_indices.json", "r") as f:
+    class_indices = json.load(f)
+
+# Reverse mapping: integer class → folder name
+IDX_TO_FOLDER = {v: k for k, v in class_indices.items()}
+
+# Map folder names to chess notation
+FOLDER_TO_PIECE = {
+    "bP": "p", "bN": "n", "bB": "b", "bR": "r", "bQ": "q", "bK": "k",
+    "wP": "P", "wN": "N", "wB": "B", "wR": "R", "wQ": "Q", "wK": "K",
+    "empty": ""
 }
 
 os.makedirs("debug", exist_ok=True)
@@ -84,6 +92,7 @@ def preprocess_cell(cell):
     cell = cell.astype(np.float32) / 255.0
     return cell
 
+
 def predict_cells(cells):
     print("[INFO] Running inference on cells")
     X = np.array([preprocess_cell(c) for c in cells])
@@ -93,25 +102,27 @@ def predict_cells(cells):
     classes = np.argmax(preds, axis=1)
     confidences = np.max(preds, axis=1)
 
+    pieces = []
     for i, (cls, conf) in enumerate(zip(classes, confidences)):
-        piece = IDX_TO_PIECE[cls] if cls in IDX_TO_PIECE else "?"
+        folder = IDX_TO_FOLDER[cls]              # class index → folder name
+        piece = FOLDER_TO_PIECE.get(folder, "?") # folder name → chess notation
+        pieces.append(piece)
+
         r = i // 8
         c = i % 8
         print(f"[PRED] square=({r},{c}) class={cls} piece='{piece}' conf={conf:.4f}")
 
-    return classes, confidences
+    return pieces, confidences
 
-def board_to_fen(class_board):
+def board_to_fen(pieces_board):
     fen_rows = []
-
     print("[INFO] Converting board to FEN")
 
-    for r, row in enumerate(class_board):
+    for r in range(8):
         fen_row = ""
         empty = 0
-
-        for c, idx in enumerate(row):
-            piece = IDX_TO_PIECE.get(idx, "?")
+        for c in range(8):
+            piece = pieces_board[r*8 + c] if isinstance(pieces_board, list) else pieces_board[r, c]
             if piece == "":
                 empty += 1
             else:
@@ -119,12 +130,10 @@ def board_to_fen(class_board):
                     fen_row += str(empty)
                     empty = 0
                 fen_row += piece
-
         if empty > 0:
             fen_row += str(empty)
-
-        print(f"[FEN] rank {8-r}: {fen_row}")
         fen_rows.append(fen_row)
+        print(f"[FEN] rank {8-r}: {fen_row}")
 
     fen = "/".join(fen_rows) + " w - - 0 1"
     return fen
@@ -133,9 +142,8 @@ def image_to_fen(image_path):
     img = load_image(image_path)
     board = crop_chessboard(img)
     cells = split_into_cells(board)
-    classes, confidences = predict_cells(cells)
-    class_board = classes.reshape(8, 8)
-    fen = board_to_fen(class_board)
+    pieces, confidences = predict_cells(cells)
+    fen = board_to_fen(pieces)
     return fen
 
 if __name__ == "__main__":

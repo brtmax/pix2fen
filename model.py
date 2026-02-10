@@ -1,3 +1,4 @@
+import json
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
@@ -36,6 +37,10 @@ train_generator = train_datagen.flow_from_directory(
     class_mode='categorical'
 )
 
+with open("class_indices.json", "w") as f:
+    json.dump(train_generator.class_indices, f)
+print("Saved class indices:", train_generator.class_indices)
+
 val_generator = val_datagen.flow_from_directory(
     val_dir,
     target_size=img_size,
@@ -45,22 +50,23 @@ val_generator = val_datagen.flow_from_directory(
 
 model = Sequential([
     Input(shape=(69,69,3)),
-    Conv2D(32, (3,3), activation='relu', input_shape=(img_size[0], img_size[1], 4)),
-    BatchNormalization(),
-    MaxPooling2D(2,2),
 
-    Conv2D(64, (3,3), activation='relu'),
+    # Conv Layer 1
+    Conv2D(16, (3,3), activation='relu', padding='same'),
     BatchNormalization(),
     MaxPooling2D(2,2),
+    Dropout(0.2),
 
-    Conv2D(128, (3,3), activation='relu'),
+    # Conv Layer 2
+    Conv2D(32, (3,3), activation='relu', padding='same'),
     BatchNormalization(),
     MaxPooling2D(2,2),
+    Dropout(0.2),
 
     Flatten(),
     Dense(64, activation='relu'),
-    Dropout(0.4),
-    Dense(num_classes, activation='softmax')
+    Dropout(0.3),
+    Dense(13, activation='softmax')
 ])
 
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
