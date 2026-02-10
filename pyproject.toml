@@ -1,0 +1,14 @@
+[project]
+name = "pix2fen"
+version = "0.1.0"
+description = "Chessboard screenshot to FEN"
+requires-python = ">=3.10"
+
+dependencies = [
+    "tensorflow",
+    "opencv-python",
+    "numpy"
+]
+
+[project.scripts]
+pix2fen = "pix2fen.cli:main"
