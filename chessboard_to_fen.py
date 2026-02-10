@@ -154,6 +154,5 @@ if __name__ == "__main__":
     image_path = sys.argv[1]
     fen = image_to_fen(image_path)
 
-    print("\n========== FINAL FEN ==========")
     print(fen)
 
