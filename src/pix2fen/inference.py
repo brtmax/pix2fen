@@ -5,7 +5,7 @@ from tensorflow.keras.models import load_model
 from .download_model import get_model
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent
 CLASS_INDICES_PATH = ROOT / "class_indices.json"
 IMG_SIZE = (69, 69)
 

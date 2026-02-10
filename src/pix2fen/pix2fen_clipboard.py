@@ -4,7 +4,7 @@ import cv2
 import shutil
 import os
 import tempfile
-import glurp
+import pyperclip
 import subprocess
 
 from pix2fen.fen import pieces_to_fen
@@ -58,7 +58,7 @@ def main():
     fen = pieces_to_fen(pieces)
 
     # Copy FEN to clipboard via glurp
-    glurp.copy(fen)
+    pyperclip.copy(fen)
     print("[INFO] FEN copied to clipboard")
 
 if __name__ == "__main__":
