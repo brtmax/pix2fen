@@ -7,11 +7,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "opencv-python",
-    "numpy"
+    "numpy",
+    "pyperclip"
 ]
+optional-dependencies = { dev = ["tensorflow"] }
 
 [project.scripts]
 pix2fen = "pix2fen.cli:main"
+pix2fen-clipboard = "pix2fen.pix2fen_clipboard:main"
 
 [tool.setuptools]
 packages = ["pix2fen"]
