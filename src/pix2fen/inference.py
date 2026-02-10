@@ -2,6 +2,7 @@ import json
 import numpy as np
 import cv2
 from tensorflow.keras.models import load_model
+from .download_model import get_model
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -24,17 +25,6 @@ FOLDER_TO_PIECE = {
 }
 
 _model = None
-
-def get_model():
-    """Lazy-load the model, downloading it if necessary."""
-    global _model
-    if _model is None:
-        if not LOCAL_MODEL_PATH.exists():
-            print("[INFO] Downloading model...")
-            urllib.request.urlretrieve(MODEL_URL, LOCAL_MODEL_PATH)
-            print(f"[INFO] Model downloaded to {LOCAL_MODEL_PATH}")
-        _model = load_model(LOCAL_MODEL_PATH)
-    return _model
 
 def preprocess_cell(cell):
     cell = cv2.resize(cell, IMG_SIZE)
