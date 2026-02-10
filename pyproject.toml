@@ -1,14 +1,20 @@
 [project]
 name = "pix2fen"
 version = "0.1.0"
+authors = [{name="Max Bretschneider", email="maxbretschneider@mailbox.org"}]
 description = "Chessboard screenshot to FEN"
-requires-python = ">=3.10"
-
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
-    "tensorflow",
+    "tensorflow>=2.14",
     "opencv-python",
     "numpy"
 ]
 
 [project.scripts]
 pix2fen = "pix2fen.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
