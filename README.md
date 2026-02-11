@@ -19,6 +19,8 @@ This mainly solves a personal problem I have, but the model output can be used f
 3. Paste into any board editor of your choice (like https://lichess.org/editor) and paste it
 4. Play it!
 
+![Demo](https://www.brt.fyi/images/pix2fen/pix2fen.jpg)
+
 ## Installation
 There's currently two ways to use this. You can just get the binary file from, put that on your path and be good to go. This packages only the pix2fen-clipboard functionality. If you want the full inference + dataset stuff, you have to install the dependencies via pip. 
 
