@@ -21,6 +21,8 @@ This mainly solves a personal problem I have, but the model output can be used f
 
 ![Demo](https://www.brt.fyi/images/pix2fen/pix2fen.jpg)
 
+Position from J.Babson, 1882. *Mate in one move, in 47 different ways*
+
 ## Installation
 There's currently two ways to use this. You can just get the binary file from, put that on your path and be good to go. This packages only the pix2fen-clipboard functionality. If you want the full inference + dataset stuff, you have to install the dependencies via pip. 
 
